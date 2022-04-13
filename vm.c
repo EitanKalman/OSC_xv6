@@ -409,7 +409,7 @@ mprotect(void *addr, int len)
   
   //check that addr is page aligned
   if((uint) addr % PGSIZE  != 0){
-    cprintf("\nAddress is not page alligned%p\n", addr);
+    cprintf("\nAddress is not page alligned %p\n", addr);
     return -1;
   }
 
@@ -443,7 +443,7 @@ munprotect(void *addr, int len)
   
   //check that addr is page aligned
   if((uint) addr % PGSIZE  != 0){
-    cprintf("\nAddress is not page alligned%p\n", addr);
+    cprintf("\nAddress is not page alligned %p\n", addr);
     return -1;
   }
 
