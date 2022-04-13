@@ -10,6 +10,7 @@
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 
+
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void
@@ -389,6 +390,74 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
     buf += n;
     va = va0 + PGSIZE;
   }
+  return 0;
+}
+
+
+//mprotect system call makes PTEs read only
+int
+mprotect(void *addr, int len)
+{
+  struct proc *currentproc = myproc();
+    void * endAddr = addr + (len * PGSIZE);
+  
+  //check that addr points to a region within the address space
+  if(len<=0 || (uint) endAddr > currentproc->vlimit){
+    cprintf("\nInvalid length\n");
+    return -1;
+  }
+  
+  //check that addr is page aligned
+  if((uint) addr % PGSIZE  != 0){
+    cprintf("\nAddress is not page alligned%p\n", addr);
+    return -1;
+  }
+
+  pde_t * pgdir = currentproc->pgdir;
+ 
+  pte_t *pte;
+  //loop through the desired addresses and update the protection bit
+  for(void * i = addr; i < endAddr; i += PGSIZE){
+    pte = walkpgdir(pgdir, i, 1);
+    *pte = *pte & ~PTE_W;
+    }
+
+  //update the CR3 register
+  lcr3(V2P(pgdir));
+  return 0;
+}
+
+
+//munprotect system call makes PTEs writeable
+int
+munprotect(void *addr, int len)
+{
+  struct proc *currentproc = myproc();
+    void * endAddr = addr + (len * PGSIZE);
+  
+  //check that addr points to a region within the address space
+  if(len<=0 || (uint) endAddr > currentproc->vlimit){
+    cprintf("\nInvalid length\n");
+    return -1;
+  }
+  
+  //check that addr is page aligned
+  if((uint) addr % PGSIZE  != 0){
+    cprintf("\nAddress is not page alligned%p\n", addr);
+    return -1;
+  }
+
+  pde_t * pgdir = currentproc->pgdir;
+ 
+  pte_t *pte;
+  //loop through the desired addresses and update the protection bit
+  for(void * i = addr; i < endAddr; i += PGSIZE){
+    pte = walkpgdir(pgdir, i, 1);
+    *pte = *pte | PTE_W;
+    }
+
+  //update the CR3 register
+  lcr3(V2P(pgdir));
   return 0;
 }
 

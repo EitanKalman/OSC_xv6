@@ -8,6 +8,29 @@
 #include "proc.h"
 
 int
+sys_mprotect(void){
+  int addr;
+  int len = 0;
+  // Check that the address and length are both greater than 0
+  if(argint(0, &addr)<0 || argint(1, &len)<0)
+    return -1;
+  // Call the mprotect function with the reqired parameters 
+  return mprotect((void *)addr,len);
+}
+
+int
+sys_munprotect(void){
+  int addr;
+  int len = 0;
+  // Check that the address and length are both greater than 0
+  if(argint(0, &addr)<0 || argint(1, &len)<0)
+    return -1;
+  // Call the mprotect function with the reqired parameters 
+  return munprotect((void *)addr,len);
+}
+
+
+int
 sys_fork(void)
 {
   return fork();
@@ -89,3 +112,4 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
